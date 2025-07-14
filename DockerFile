@@ -10,5 +10,5 @@ COPY target/*.jar app.jar
 # 🚪 Expose port (match your server.port in application.properties or default 8080)
 EXPOSE 8080
 
-# 🚀 Run the jar
+# 🚀 Run the ja
 ENTRYPOINT ["java", "-jar", "app.jar"]
