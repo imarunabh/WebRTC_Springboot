@@ -1,14 +1,29 @@
-# Use JDK base image
-FROM eclipse-temurin:17-jdk-alpine
+# -------- Stage 1: Build --------
+FROM maven:3.9.5-eclipse-temurin-17 as builder
 
-# Create a working directory inside the container
+# Create app directory
 WORKDIR /app
 
-# Copy the built JAR into the container
-COPY target/*.jar app.jar
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Expose port 8080 (your WebSocket and REST run here)
+# Copy source code
+COPY src ./src
+
+# Package the application
+RUN mvn clean package -DskipTests
+
+# -------- Stage 2: Run --------
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
+
+# Copy the built JAR from stage 1
+COPY --from=builder /app/target/*.jar app.jar
+
+# Expose the port used by Spring Boot
 EXPOSE 8080
 
-# Command to run the Spring Boot app
+# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
